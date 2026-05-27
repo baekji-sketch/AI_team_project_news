@@ -2,7 +2,7 @@ import json
 import os
 import re
 import time
-import openai
+from openai import OpenAI
 import streamlit as st
 
 
@@ -32,8 +32,8 @@ def generate_openai_text(prompt, max_tokens=700):
     if not api_key:
         raise ValueError("Missing OpenAI API key.")
 
-    openai.api_key = api_key
-    response = openai.ChatCompletion.create(
+    client = OpenAI(api_key=api_key)
+    response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a professional future news writer."},
@@ -71,8 +71,8 @@ def generate_openai_image(prompt, size="1024x1024"):
     if not api_key:
         raise ValueError("Missing OpenAI API key.")
 
-    openai.api_key = api_key
-    result = openai.Image.create(
+    client = OpenAI(api_key=api_key)
+    result = client.images.generate(
         prompt=prompt,
         n=1,
         size=size,
