@@ -16,6 +16,13 @@ def get_openai_api_key():
     return None
 
 
+def get_openai_client():
+    api_key = get_openai_api_key()
+    if not api_key:
+        raise ValueError("Missing OpenAI API key.")
+    return OpenAI(api_key=api_key)
+
+
 def initialize_session_state():
     if "story_history" not in st.session_state:
         st.session_state.story_history = []
@@ -28,25 +35,19 @@ def initialize_session_state():
 
 
 def generate_openai_text(prompt, max_tokens=700):
-    api_key = get_openai_api_key()
-    if not api_key:
-        raise ValueError("Missing OpenAI API key.")
-
-    client = OpenAI(api_key=api_key)
-    response = client.chat.completions.create(
+    client = get_openai_client()
+    response = client.responses.create(
         model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a professional future news writer."},
-            {"role": "user", "content": prompt},
-        ],
+        input=(
+            "You are a professional future news writer.\n\n"
+            + prompt
+        ),
         temperature=0.85,
-        max_tokens=max_tokens,
+        max_output_tokens=max_tokens,
         top_p=0.95,
-        frequency_penalty=0.4,
-        presence_penalty=0.3,
     )
 
-    raw_text = response.choices[0].message["content"].strip()
+    raw_text = (response.output_text or "").strip()
     return parse_story_response(raw_text)
 
 
